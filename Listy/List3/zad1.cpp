@@ -1,4 +1,7 @@
 #include <Arduino.h>
+#include <LiquidCrystal_I2C.h>
+
+LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 #define LED_RED 6
 #define LED_GREEN 5
@@ -34,7 +37,7 @@ bool isReleased(DebouncedButton &button) {
 
     if (millis() - button.lastChangeTime > DEBOUNCE_PERIOD) {
         if (currentReading != button.debouncedState) {
-            if (button.debouncedState == LOW && currentReading == HIGH) {
+            if (button.debouncedState == LOW) {
                 isReleased = true;
             }
             button.debouncedState = currentReading;
@@ -47,6 +50,12 @@ bool isReleased(DebouncedButton &button) {
 }
 
 void setup() {
+    // Czyszczenie LCD - sterownik nie resetuje się razem z płytką.
+    lcd.init();
+    lcd.clear();
+    lcd.noDisplay();
+    lcd.noBacklight();
+
     pinMode(LED_RED, OUTPUT);
     pinMode(LED_GREEN, OUTPUT);
     pinMode(LED_BLUE, OUTPUT);

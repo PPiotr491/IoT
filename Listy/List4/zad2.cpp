@@ -1,10 +1,19 @@
 #include <Arduino.h>
+#include <LiquidCrystal_I2C.h>
+
+LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 #define LED_RED 6
 #define LED_GREEN 5
 #define LED_BLUE 3
 
 void setup() {
+    // Czyszczenie LCD - sterownik nie resetuje się razem z płytką.
+    lcd.init();
+    lcd.clear();
+    lcd.noDisplay();
+    lcd.noBacklight();
+
     pinMode(LED_RED, OUTPUT);
     pinMode(LED_GREEN, OUTPUT);
     pinMode(LED_BLUE, OUTPUT);

@@ -10,6 +10,7 @@ int lastAdc = -1;
 
 void setup() {
     lcd.init();
+    lcd.clear();
     lcd.backlight();
     lcd.setCursor(0, 0);
     lcd.print("ADC:");

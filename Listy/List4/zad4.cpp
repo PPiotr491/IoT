@@ -1,9 +1,18 @@
 #include <Arduino.h>
+#include <LiquidCrystal_I2C.h>
+
+LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 #define POTENTIOMETER A0
 #define VREF 5.0
 
 void setup() {
+    // Czyszczenie LCD - sterownik nie resetuje się razem z płytką.
+    lcd.init();
+    lcd.clear();
+    lcd.noDisplay();
+    lcd.noBacklight();
+
     Serial.begin(9600);
     while (!Serial) {
     }

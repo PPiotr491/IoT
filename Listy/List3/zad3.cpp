@@ -41,9 +41,9 @@ DebouncedButton redButton = {RED_BUTTON, HIGH, HIGH, 0UL};
 DebouncedButton greenButton = {GREEN_BUTTON, HIGH, HIGH, 0UL};
 
 bool running = false;
-unsigned long accumulatedMs = 0UL; // czas zmierzony przed ostatnim uruchomieniem
+unsigned long accumulatedMs = 0UL;
 unsigned long startTime = 0UL;
-unsigned long lastDisplayedSeconds = 0xFFFFFFFFUL;
+unsigned long lastDisplayedMs = 0xFFFFFFFFUL;
 
 unsigned long elapsedMs() {
     if (running) {
@@ -59,18 +59,24 @@ void printTwoDigits(unsigned long value) {
     lcd.print(value);
 }
 
-// Aktualizuje tylko zmieniające się fragmenty ekranu, bez lcd.clear().
-void updateDisplay() {
-    unsigned long seconds = elapsedMs() / 1000UL;
+void printThreeDigits(unsigned long value) {
+    if (value < 100) {
+        lcd.print('0');
+    }
+    printTwoDigits(value);
+}
 
-    if (seconds != lastDisplayedSeconds) {
-        lcd.setCursor(4, 1);
-        printTwoDigits(seconds / 3600UL);
+void updateDisplay() {
+    unsigned long ms = elapsedMs();
+
+    if (ms != lastDisplayedMs) {
+        lcd.setCursor(3, 1);
+        printTwoDigits(ms / 60000UL);
         lcd.print(':');
-        printTwoDigits((seconds / 60UL) % 60UL);
-        lcd.print(':');
-        printTwoDigits(seconds % 60UL);
-        lastDisplayedSeconds = seconds;
+        printTwoDigits((ms / 1000UL) % 60UL);
+        lcd.print('.');
+        printThreeDigits(ms % 1000UL);
+        lastDisplayedMs = ms;
     }
 }
 
@@ -84,6 +90,7 @@ void setup() {
     pinMode(GREEN_BUTTON, INPUT_PULLUP);
 
     lcd.init();
+    lcd.clear();
     lcd.backlight();
 
     lcd.setCursor(0, 0);

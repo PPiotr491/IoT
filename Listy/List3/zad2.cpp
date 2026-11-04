@@ -1,4 +1,7 @@
 #include <Arduino.h>
+#include <LiquidCrystal_I2C.h>
+
+LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 #define LED_RED 6
 #define LED_GREEN 5
@@ -27,6 +30,12 @@ void run(BlinkTask &task) {
 }
 
 void setup() {
+    // Czyszczenie LCD - sterownik nie resetuje się razem z płytką.
+    lcd.init();
+    lcd.clear();
+    lcd.noDisplay();
+    lcd.noBacklight();
+
     for (int i = 0; i < blinkTaskCount; i++) {
         pinMode(blinkTasks[i].pin, OUTPUT);
         digitalWrite(blinkTasks[i].pin, blinkTasks[i].state);
