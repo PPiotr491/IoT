@@ -27,7 +27,7 @@ void loop() {
 
         lcd.setCursor(5, 0);
         lcd.print(adc);
-        lcd.print("    ");   // wyczyszczenie pozostałości po dłuższej liczbie
+        lcd.print("    ");
 
         lcd.setCursor(3, 1);
         lcd.print(voltage, 2);

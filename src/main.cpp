@@ -69,10 +69,10 @@ void printThreeDigits(unsigned long value) {
 }
 
 void updateDisplay() {
-    if (millis() - lastRefreshTime < DISPLAY_REFRESH_PERIOD) {
-        return;
-    }
-    lastRefreshTime = millis();
+//     if (millis() - lastRefreshTime < DISPLAY_REFRESH_PERIOD) {
+//         return;
+//     }
+//     lastRefreshTime = millis();
 
     unsigned long ms = elapsedMs();
 
@@ -127,6 +127,5 @@ void loop() {
         updateStatus();
     }
 
-    
     updateDisplay();
 }

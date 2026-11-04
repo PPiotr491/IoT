@@ -68,12 +68,11 @@ void printThreeDigits(unsigned long value) {
     printTwoDigits(value);
 }
 
-// Czas jest liczony cały czas z millis(), a ekran odświeżany najwyżej co 50 ms.
 void updateDisplay() {
-    if (millis() - lastRefreshTime < DISPLAY_REFRESH_PERIOD) {
-        return;
-    }
-    lastRefreshTime = millis();
+//     if (millis() - lastRefreshTime < DISPLAY_REFRESH_PERIOD) {
+//         return;
+//     }
+//     lastRefreshTime = millis();
 
     unsigned long ms = elapsedMs();
 
