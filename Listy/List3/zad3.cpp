@@ -5,6 +5,7 @@
 #define GREEN_BUTTON 4
 
 #define DEBOUNCE_PERIOD 10UL
+#define DISPLAY_REFRESH_PERIOD 50UL
 
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
@@ -44,6 +45,7 @@ bool running = false;
 unsigned long accumulatedMs = 0UL;
 unsigned long startTime = 0UL;
 unsigned long lastDisplayedMs = 0xFFFFFFFFUL;
+unsigned long lastRefreshTime = 0UL;
 
 unsigned long elapsedMs() {
     if (running) {
@@ -66,7 +68,13 @@ void printThreeDigits(unsigned long value) {
     printTwoDigits(value);
 }
 
+// Czas jest liczony cały czas z millis(), a ekran odświeżany najwyżej co 50 ms.
 void updateDisplay() {
+    if (millis() - lastRefreshTime < DISPLAY_REFRESH_PERIOD) {
+        return;
+    }
+    lastRefreshTime = millis();
+
     unsigned long ms = elapsedMs();
 
     if (ms != lastDisplayedMs) {
@@ -100,7 +108,6 @@ void setup() {
 }
 
 void loop() {
-    // Oba przyciski muszą być sprawdzane w każdym obiegu, żeby śledzić ich stan.
     bool greenPressed = isPressed(greenButton);
     bool redPressed = isPressed(redButton);
 

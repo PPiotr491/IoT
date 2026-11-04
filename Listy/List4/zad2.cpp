@@ -8,7 +8,6 @@ LiquidCrystal_I2C lcd(0x27, 16, 2);
 #define LED_BLUE 3
 
 void setup() {
-    // Czyszczenie LCD - sterownik nie resetuje się razem z płytką.
     lcd.init();
     lcd.clear();
     lcd.noDisplay();
@@ -27,8 +26,6 @@ void setup() {
     };
 }
 
-
-// Returns true if the string is a non-empty sequence of digits with value 0-255
 bool isValidValue(const String &s) {
     if (s.length() == 0 || s.length() > 3)
         return false;

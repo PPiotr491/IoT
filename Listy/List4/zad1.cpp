@@ -12,7 +12,6 @@ void initButtons() {
 }
 
 void setup() {
-    // Czyszczenie LCD - sterownik nie resetuje się razem z płytką.
     lcd.init();
     lcd.clear();
     lcd.noDisplay();
