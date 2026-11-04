@@ -1,118 +1,69 @@
 #include <Arduino.h>
-#include <LiquidCrystal_I2C.h>
 
-#define RED_BUTTON 2
-#define GREEN_BUTTON 4
-
-#define DEBOUNCE_PERIOD 10UL
-
-LiquidCrystal_I2C lcd(0x27, 16, 2);
-
-struct DebouncedButton {
-    int pin;
-    int debouncedState;
-    int previousReading;
-    unsigned long lastChangeTime;
-};
-
-bool isPressed(DebouncedButton &button) {
-    bool isPressed = false;
-    int currentReading = digitalRead(button.pin);
-
-    if (button.previousReading != currentReading) {
-        button.lastChangeTime = millis();
-    }
-
-    if (millis() - button.lastChangeTime > DEBOUNCE_PERIOD) {
-        if (currentReading != button.debouncedState) {
-            if (button.debouncedState == HIGH && currentReading == LOW) {
-                isPressed = true;
-            }
-            button.debouncedState = currentReading;
-        }
-    }
-
-    button.previousReading = currentReading;
-
-    return isPressed;
-}
-
-DebouncedButton redButton = {RED_BUTTON, HIGH, HIGH, 0UL};
-DebouncedButton greenButton = {GREEN_BUTTON, HIGH, HIGH, 0UL};
-
-bool running = false;
-unsigned long accumulatedMs = 0UL; // czas zmierzony przed ostatnim uruchomieniem
-unsigned long startTime = 0UL;
-unsigned long lastDisplayedSeconds = 0xFFFFFFFFUL;
-
-unsigned long elapsedMs() {
-    if (running) {
-        return accumulatedMs + (millis() - startTime);
-    }
-    return accumulatedMs;
-}
-
-void printTwoDigits(unsigned long value) {
-    if (value < 10) {
-        lcd.print('0');
-    }
-    lcd.print(value);
-}
-
-// Aktualizuje tylko zmieniające się fragmenty ekranu, bez lcd.clear().
-void updateDisplay() {
-    unsigned long seconds = elapsedMs() / 1000UL;
-
-    if (seconds != lastDisplayedSeconds) {
-        lcd.setCursor(4, 1);
-        printTwoDigits(seconds / 3600UL);
-        lcd.print(':');
-        printTwoDigits((seconds / 60UL) % 60UL);
-        lcd.print(':');
-        printTwoDigits(seconds % 60UL);
-        lastDisplayedSeconds = seconds;
-    }
-}
-
-void updateStatus() {
-    lcd.setCursor(8, 0);
-    lcd.print(running ? "START" : "STOP ");
-}
+#define LED_RED 6
+#define LED_GREEN 5
+#define LED_BLUE 3
 
 void setup() {
-    pinMode(RED_BUTTON, INPUT_PULLUP);
-    pinMode(GREEN_BUTTON, INPUT_PULLUP);
+    pinMode(LED_RED, OUTPUT);
+    pinMode(LED_GREEN, OUTPUT);
+    pinMode(LED_BLUE, OUTPUT);
 
-    lcd.init();
-    lcd.backlight();
+    digitalWrite(LED_RED, LOW);
+    digitalWrite(LED_GREEN, LOW);
+    digitalWrite(LED_BLUE, LOW);
 
-    lcd.setCursor(0, 0);
-    lcd.print("Stoper");
-    updateStatus();
-    updateDisplay();
+    Serial.begin(9600);
+    while(!Serial) {
+    };
+}
+
+
+// Returns true if the string is a non-empty sequence of digits with value 0-255
+bool isValidValue(const String &s) {
+    if (s.length() == 0 || s.length() > 3)
+        return false;
+    
+    for (unsigned int i = 0; i < s.length(); i++) {
+        if (!isDigit(s[i]))
+            return false;
+    }
+    
+    return s.toInt() <= 255;
 }
 
 void loop() {
-    // Oba przyciski muszą być sprawdzane w każdym obiegu, żeby śledzić ich stan.
-    bool greenPressed = isPressed(greenButton);
-    bool redPressed = isPressed(redButton);
+    if (Serial.available() > 0) {
+        String command = Serial.readStringUntil('\n');
+        command.trim();
+        command.toLowerCase();
 
-    if (greenPressed) {
-        if (running) {
-            accumulatedMs += millis() - startTime;
-            running = false;
-        } else {
-            startTime = millis();
-            running = true;
+        if (command.startsWith("setled ")) {
+            int firstSpace = command.indexOf(' ');
+            int secondSpace = command.indexOf(' ', firstSpace + 1);
+            int thirdSpace = command.indexOf(' ', secondSpace + 1);
+
+
+            String redStr, greenStr, blueStr;
+            // sprawdzenie czy jest wystarczająco argumentów i czy nie ma ich zbyt dużo
+            if (secondSpace != -1 && thirdSpace != -1 && command.indexOf(' ', thirdSpace + 1) == -1) {
+                redStr = command.substring(firstSpace + 1, secondSpace);
+                greenStr = command.substring(secondSpace + 1, thirdSpace);
+                blueStr = command.substring(thirdSpace + 1);
+            }
+
+            // sprawdzenie czy arugmenty są poprawne
+            if (isValidValue(redStr) && isValidValue(greenStr) && isValidValue(blueStr)) {
+                analogWrite(LED_RED, redStr.toInt());
+                analogWrite(LED_GREEN, greenStr.toInt());
+                analogWrite(LED_BLUE, blueStr.toInt());
+                Serial.println("LED set to R=" + redStr + " G=" + greenStr + " B=" + blueStr);
+            } else {
+                Serial.println("Invalid arguments. Usage: setled R G B (values 0-255)");
+            }
         }
-        updateStatus();
+        else {
+            Serial.println("Unknown command '" + command + "'");
+        }
     }
-
-    if (redPressed) {
-        running = false;
-        accumulatedMs = 0UL;
-        updateStatus();
-    }
-
-    updateDisplay();
 }
